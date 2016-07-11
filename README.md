@@ -6,5 +6,6 @@ Take your rights to selectively watch Youtube ads.
 3. It will run local web proxy powered by FiddlerCore.
 4. Get Youtube.
 5. It will hook some code. If you don't see any further messages, try deleting of cache files of your browser.
+
 # Status
 Beta. Todo: 'Ad selection' functionality. Its script file usage makes it hard to interrupt additional functionality after pages loads.
