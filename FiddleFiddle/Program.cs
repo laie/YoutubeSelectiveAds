@@ -93,7 +93,7 @@ namespace FiddleFiddle
                 {
                     oSession.utilDecodeResponse();
                     String originbody = System.Text.Encoding.UTF8.GetString(oSession.responseBodyBytes);
-                    var replacedBody = Regex.Replace(originbody, @"([a-zA-Z_]*)\(this,""start"",\!([0-1]),\!([0-1])\)", @"$1(this,""resume"",!$2,!$3)");
+                    var replacedBody = Regex.Replace(originbody, @"([a-zA-Z_]*)\(this,""start"",\!([0-1]),\!([0-1])\)", @"$1(this,""skip"",!$2,!$3)");
                     bool replaced = !originbody.SequenceEqual(replacedBody);
                     oSession.utilSetResponseBody(replacedBody);
                     Console.WriteLine("gotcha: " + oSession.fullUrl);
