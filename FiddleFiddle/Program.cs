@@ -67,10 +67,17 @@ namespace FiddleFiddle
         {
             static ConsoleEventDelegate handler;   // Keeps it from getting garbage collected
                                                    // Pinvoke
-            public delegate bool ConsoleEventDelegate(int eventType);
+            public delegate bool ConsoleEventDelegate(CtrlTypes eventType);
             [DllImport("kernel32.dll", SetLastError = true)]
             private static extern bool SetConsoleCtrlHandler(ConsoleEventDelegate callback, bool add);
-
+            public enum CtrlTypes
+            {
+                CTRL_C_EVENT = 0,
+                CTRL_BREAK_EVENT,
+                CTRL_CLOSE_EVENT,
+                CTRL_LOGOFF_EVENT = 5,
+                CTRL_SHUTDOWN_EVENT
+            }
             public static void StartMonitor(ConsoleEventDelegate eventHandler)
             {
                 handler = eventHandler;
@@ -80,7 +87,7 @@ namespace FiddleFiddle
 
         static void Main(string[] args)
         {
-            ConsoleEvents.StartMonitor(eventType => { if (eventType == 2) FiddlerApplication.Shutdown(); return false; });
+            ConsoleEvents.StartMonitor(eventType => { FiddlerApplication.Shutdown(); return false; });
             Certification.InstallCertificate();
 
             FiddlerApplication.BeforeRequest += delegate (Fiddler.Session oSession)
