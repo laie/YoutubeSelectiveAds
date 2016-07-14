@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Fiddler;
@@ -91,12 +92,14 @@ namespace FiddleFiddle
                 if (oSession.url.Contains("/jsbin/player") && oSession.url.Contains("base.js"))
                 {
                     oSession.utilDecodeResponse();
-                    String oBody = System.Text.Encoding.UTF8.GetString(oSession.responseBodyBytes);
-                    {
-                        oBody = oBody.Replace("_(this,\"start\",!0,!0)", "_(this,\"skip\",!0,!0)");
-                    }
-                    oSession.utilSetResponseBody(oBody);
+                    String originbody = System.Text.Encoding.UTF8.GetString(oSession.responseBodyBytes);
+                    var replacedBody = Regex.Replace(originbody, @"([a-zA-Z_]*)\(this,""start"",\!([0-1]),\!([0-1])\)", @"$1(this,""resume"",!$2,!$3)");
+                    bool replaced = !originbody.SequenceEqual(replacedBody);
+                    oSession.utilSetResponseBody(replacedBody);
                     Console.WriteLine("gotcha: " + oSession.fullUrl);
+                    if (replaced)
+                        Console.WriteLine("modified the functionality of youtube!");
+                    else Console.WriteLine("failed to modify the functionality. try up-to-date version.");
                 }
             };
             //FiddlerApplication.AfterSessionComplete += FiddlerApplication_AfterSessionComplete;
