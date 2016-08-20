@@ -30,7 +30,7 @@ namespace FiddleFiddle
             public static bool InstallCertificate()
             {
                 var certpref = ReadText("cert.str");
-                if (certpref!=null) FiddlerApplication.Prefs.SetStringPref("fiddler.certmaker.bc.cert", certpref);
+                if (certpref != null) FiddlerApplication.Prefs.SetStringPref("fiddler.certmaker.bc.cert", certpref);
                 var keypref = ReadText("certkey.str");
                 if (keypref != null) FiddlerApplication.Prefs.SetStringPref("fiddler.certmaker.bc.key", keypref);
 
@@ -85,6 +85,34 @@ namespace FiddleFiddle
             }
         }
 
+        private static void FiddlerApplication_AfterSocketAccept(object sender, ConnectionEventArgs e)
+        {
+            var ep = (e.Connection.RemoteEndPoint as System.Net.IPEndPoint);
+            if (ep.AddressFamily != System.Net.Sockets.AddressFamily.InterNetworkV6)
+            {
+                Console.WriteLine("unexpected non Ipv6 connection!");
+                e.Connection.Close();
+                return;
+            }
+            if (ep.Address.IsIPv4MappedToIPv6)
+            {
+                if (ep.Address.MapToIPv4().Equals(System.Net.IPAddress.Loopback))
+                {
+                    // allowed
+                    return;
+                }
+            }
+            else
+            {
+                if (ep.Address.Equals(System.Net.IPAddress.IPv6Loopback))
+                {
+                    // allowed
+                    return;
+                }
+            }
+            Console.WriteLine("remote ep " + ep.ToString() + " isn't allowed to connect!");
+            e.Connection.Close();
+        }
         static void Main(string[] args)
         {
             ConsoleEvents.StartMonitor(eventType => { FiddlerApplication.Shutdown(); return false; });
@@ -96,7 +124,7 @@ namespace FiddleFiddle
             };
             FiddlerApplication.BeforeResponse += delegate (Fiddler.Session oSession)
             {
-                if (oSession.url.Contains("/jsbin/player") && oSession.url.Contains("base.js"))
+                if (oSession.url.Contains("yts/jsbin/player") && oSession.url.Contains("base.js"))
                 {
                     oSession.utilDecodeResponse();
                     String originbody = System.Text.Encoding.UTF8.GetString(oSession.responseBodyBytes);
@@ -110,10 +138,13 @@ namespace FiddleFiddle
                 }
             };
             //FiddlerApplication.AfterSessionComplete += FiddlerApplication_AfterSessionComplete;
-            FiddlerApplication.Startup(8888, true, true, true);
+            FiddlerApplication.AfterSocketAccept += FiddlerApplication_AfterSocketAccept;
+            FiddlerApplication.Startup(8890, true, true, true);
+
 
             Console.WriteLine("I am looking for the ads...! Don't see any messages after opening Youtube? Try delete your cache files.");
             for (;;) Thread.Sleep(100000);
         }
+
     }
 }
